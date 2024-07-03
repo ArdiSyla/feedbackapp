@@ -11,7 +11,7 @@ const questionnaireRoutes = require('./routes/questionnaireRoutes');
 const responseRoutes = require('./routes/responseRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const questionRoutes = require('./routes/questionRoutes');
-const reportRoutes = require('./routes/reportRoutes');
+const reportsController = require('./controllers/reportsController');
 
 
 app.use(express.json());
@@ -26,7 +26,7 @@ app.use('/questionnaires', questionnaireRoutes);
 app.use('/responses', responseRoutes);
 app.use('/company', companyRoutes);
 app.use('/question', questionRoutes);
-app.use('/reports', reportRoutes);
+app.use('/api', reportsController);
 
 
 mongoose.connect('mongodb://localhost:27017/feedbackApp').then(() => {

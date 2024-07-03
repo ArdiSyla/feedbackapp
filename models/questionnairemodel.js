@@ -1,10 +1,13 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const Question = require('./questionmodel');
 
 // Define the questionnaire schema
 const questionnaireSchema = new Schema({
-    questions: [Question.schema],
+    questions: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Question',
+        required: true
+    }],
     createdAt: {
         type: Date,
         default: Date.now
@@ -12,4 +15,3 @@ const questionnaireSchema = new Schema({
 });
 
 module.exports = mongoose.model('Questionnaire', questionnaireSchema);
-
