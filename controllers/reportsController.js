@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
+const Report = require('../models/reportmodel');
 
 // Function to calculate reports
 async function getReports(req, res) {
@@ -105,6 +106,10 @@ async function getReports(req, res) {
       medianAnswers,
       averageAnswers,
     };
+
+    const savedReport = await Report.create(reports);
+    res.json(savedReport);
+ 
 
     // Return the reports as a JSON response
     res.json(reports);
