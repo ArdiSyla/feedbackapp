@@ -15,7 +15,7 @@ const responseSchema = new Schema({
     responses: [{
         questionId: {
             type: Schema.Types.ObjectId,
-            ref: 'Questionnaire.questions',
+            ref: 'Question',
             required: true
         },
         answer: {
@@ -32,13 +32,13 @@ const responseSchema = new Schema({
 responseSchema.pre('save', async function(next) {
     try {
         const response = this;
-        const questionnaire = await mongoose.model('Questionnaire').findById(response.questionnaireId);
+        const questionnaire = await mongoose.model('Questionnaire').findById(response.questionnaireId).populate('questions');
         if (!questionnaire) {
             throw new Error('Questionnaire not found');
         }
 
         for (const resp of response.responses) {
-            const question = questionnaire.questions.id(resp.questionId);
+            const question = questionnaire.questions.find(q => q._id.equals(resp.questionId));
             if (!question) {
                 throw new Error(`Question with id ${resp.questionId} not found`);
             }
