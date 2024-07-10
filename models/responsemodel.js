@@ -12,6 +12,11 @@ const responseSchema = new Schema({
         ref: 'Questionnaire',
         required: true
     },
+    companyId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Company',  // Reference to the Company schema
+        required: true  // Modify as per your application logic
+    },
     responses: [{
         questionId: {
             type: Schema.Types.ObjectId,

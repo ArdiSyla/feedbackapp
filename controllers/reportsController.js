@@ -8,7 +8,7 @@ async function getReports(req, res) {
     // Get user registration count
     const userCount = await mongoose.model('User').countDocuments();
 
-    // Get total number of questions filled (assuming responses reference questions)
+    // Get total number of responses
     const responseCount = await mongoose.model('Response').countDocuments();
 
     // Find company used most (requires aggregation)
@@ -17,7 +17,7 @@ async function getReports(req, res) {
         {
           $lookup: {
             from: 'companies', // Replace with your company collection name
-            localField: 'company',
+            localField: 'companyId',
             foreignField: '_id',
             as: 'companyData'
           }
@@ -38,14 +38,17 @@ async function getReports(req, res) {
           $limit: 1
         }
       ]);
+
+    // Extract the company with highest usage or default to 'No data'
     const companyUsedMost = companyUsage.length > 0 ? companyUsage[0]._id : 'No data';
 
-    // Calculate median and average answers (requires looking up questions and potentially iterating through responses)
+    // Calculate median and average answers
     const medianAnswers = {};
     const averageAnswers = {};
 
     const allResponses = await mongoose.model('Response').find();
 
+    // Iterate through all responses
     for (const response of allResponses) {
       for (const resp of response.responses) {
         const question = await mongoose.model('Question').findById(resp.questionId);
@@ -53,13 +56,21 @@ async function getReports(req, res) {
           continue; // Skip if question not found
         }
 
-        const answerData = question.options ? question.options[resp.answer] : resp.answer;
+        // Calculate answer data based on question type
+        let answerData;
+        if (question.type === 'single' || question.type === 'multiple') {
+          answerData = question.options ? question.options[resp.answer] : resp.answer;
+        } else {
+          answerData = resp.answer;
+        }
 
+        // Update medianAnswers
         if (!medianAnswers[question._id]) {
           medianAnswers[question._id] = [];
         }
         medianAnswers[question._id].push(answerData);
 
+        // Update averageAnswers
         if (!averageAnswers[question._id]) {
           averageAnswers[question._id] = { sum: 0, count: 0 };
         }
@@ -86,6 +97,7 @@ async function getReports(req, res) {
         : 0;
     }
 
+    // Prepare reports object
     const reports = {
       userCount,
       responseCount,
