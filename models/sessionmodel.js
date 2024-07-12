@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const crypto = require('crypto');
 
 const sessionSchema = new Schema({
     userId: {
@@ -7,7 +8,12 @@ const sessionSchema = new Schema({
         ref: 'User',
         required: true
     },
-    token: String,
+    token: {
+        type: String,
+        default: function() {
+            return crypto.randomBytes(20).toString('hex'); // Generate a random token
+        }
+    },
     createdAt: {
         type: Date,
         default: Date.now
