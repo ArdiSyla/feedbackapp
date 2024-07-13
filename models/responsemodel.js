@@ -34,40 +34,46 @@ const responseSchema = new Schema({
     }
 });
 
+// Middleware function executed before saving a response document
 responseSchema.pre('save', async function(next) {
     try {
-        const response = this;
-        const questionnaire = await mongoose.model('Questionnaire').findById(response.questionnaireId).populate('questions');
+        const response = this; // Reference to the current response being saved
+        const questionnaire = await mongoose.model('Questionnaire').findById(response.questionnaireId).populate('questions'); // Fetch the associated questionnaire based on questionnaireId
         if (!questionnaire) {
             throw new Error('Questionnaire not found');
         }
-
+    // Validate each response in the 'responses' array
         for (const resp of response.responses) {
+            // Find the corresponding question in the questionnaire
             const question = questionnaire.questions.find(q => q._id.equals(resp.questionId));
             if (!question) {
                 throw new Error(`Question with id ${resp.questionId} not found`);
             }
-
+           // Check the type of the question and validate the answer
             const { type, isBoolean } = question;
             const { answer } = resp;
 
             if (isBoolean) {
+                // For boolean questions, ensure the answer is a boolean
                 if (typeof answer !== 'boolean') {
                     throw new Error('Invalid answer for boolean question');
                 }
             } else {
                 switch (type) {
                     case 'single':
+                        // For single choice questions, validate the answer against available options
                         if (typeof answer !== 'string' || !question.options.includes(answer)) {
                             throw new Error('Invalid answer for single choice question');
                         }
                         break;
                     case 'multiple':
+                        // For multiple choice questions, validate each selected option
                         if (!Array.isArray(answer) || !answer.every(opt => question.options.includes(opt))) {
                             throw new Error('Invalid answer for multiple choice question');
                         }
                         break;
                     case 'text':
+                         // For text questions, ensure the answer is a string
                         if (typeof answer !== 'string') {
                             throw new Error('Invalid answer for text question');
                         }
@@ -77,7 +83,7 @@ responseSchema.pre('save', async function(next) {
                 }
             }
         }
-
+        // If all validations pass, proceed with saving the response
         next();
     } catch (err) {
         next(err);

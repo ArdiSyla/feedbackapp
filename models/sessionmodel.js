@@ -11,7 +11,7 @@ const sessionSchema = new Schema({
     token: {
         type: String,
         default: function() {
-            return crypto.randomBytes(20).toString('hex'); // Generate a random token
+            return crypto.randomBytes(20).toString('hex'); 
         }
     },
     createdAt: {
